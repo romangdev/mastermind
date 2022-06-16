@@ -4,34 +4,67 @@ class Board
   def initialize(codemaker_code)
     @codemaker_code = codemaker_code
     @codebreaker_guesses = []
-    @key_pegs = nil
+    @key_peg_returns = []
   end
 
   def compare_guess(codebreaker)
    result = (@codemaker_code == codebreaker.code_guess) ? true : false
-   p result
    result
   end
 
   def save_guess(codebreaker_guess)
     @codebreaker_guesses << codebreaker_guess.code_guess
-    p @codebreaker_guesses
   end
 end
 
 class Computer 
-  attr_reader :computer_code
+  attr_reader :codemaker_code, :key_pegs
 
   COLORS = ["R", "B", "G", "Y", "P", "O"]
 
   def initialize
-    @computer_code = []
+    @codemaker_code = []
   end
 
   def choose_code
     for i in 1..4
       color = COLORS.sample
-      @computer_code << color
+      @codemaker_code << color
+    end
+  end
+
+  def guess_feedback(codebreaker)
+    @key_pegs = []
+    for i in 0..3
+      for n in 0..3
+        if @codemaker_code[i] == codebreaker.code_guess[n]
+          if i == n 
+            @key_pegs << "B"
+          else 
+            @key_pegs << "W"
+          end
+        end
+      end
+    end
+    if @key_pegs.length != 4
+      remaining_space = 4 - @key_pegs.length 
+      for j in 1..remaining_space
+        @key_pegs << nil
+      end
+    else
+      @key_pegs
+    end
+  end
+
+  def tally_colors
+    @codemaker_code.reduce(Hash.new(0)) do
+      |total, color|
+      if total[color] == nil
+        total[color] = 0
+      else 
+        total[color] += 1
+      end
+      total
     end
   end
 end
@@ -60,8 +93,10 @@ end
 computer = Computer.new
 computer.choose_code
 
-board = Board.new(computer.computer_code)
-puts board.codemaker_code
+board = Board.new(computer.codemaker_code)
+p board.codemaker_code
+hash = computer.tally_colors
+p hash
 
 result = nil
 turn = 1
@@ -72,4 +107,7 @@ while result != true && turn <= 12
   result = board.compare_guess(human)
   board.save_guess(human)
   turn += 1
+
+  computer.guess_feedback(human)
+  p computer.key_pegs
 end
