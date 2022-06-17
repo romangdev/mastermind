@@ -117,10 +117,18 @@ class Computer
 end
 
 class Human
-  attr_reader :code_guess
+  attr_reader :code_guess, :maker_or_breaker
 
   def initialize
     @code_guess = []
+    @maker_or_breaker = nil
+  end
+
+  def make_or_break
+    puts "\nType \"M\" if you want to make the code."
+    puts "Type \"B\" if you want to break the code:"
+
+    @maker_or_breaker = gets.chomp.upcase
   end
 
   def get_code_guess
@@ -138,48 +146,64 @@ class Human
   end
 end
 
-computer = Computer.new
-computer.choose_code
+human_player = Human.new
+choice = human_player.make_or_break
 
-board = Board.new(computer.codemaker_code)
-p board.codemaker_code
-hash = computer.tally_colors
+if choice == "M"
+  puts "\nGreat! So you're a codeMAKER. Computer is a codeBREAKER.\n"
 
-result = nil
-turn = 1
-while result != true && turn <= 12
-  human = Human.new
-  human.get_code_guess
+elsif choice == "B"
+  puts "\nGreat! So you're a codeBREAKER. Computer is a codeMAKER.\n"
+  sleep 2
+  puts "\nLet's begin!\n"
+  sleep 1
+  puts "\nComputer has chosen their code. Time for you to get guessin'...\n"
+  sleep 2
 
-  result = board.compare_guess(human)
-  board.save_guess(human)
+  computer = Computer.new
+  computer.choose_code
 
-  computer.guess_feedback(human, board)
+  board = Board.new(computer.codemaker_code)
+  hash = computer.tally_colors
 
-  j = 1
-  i = 0
-  puts "\n--- Game Board -----------"
-  board.codebreaker_guesses.each do
-    |guess| 
-    if j >= 10
-      print "Guess ##{j}: #{guess} ==> #{board.key_peg_returns[i]}\n"
-    else
-      print "Guess ##{j}:  #{guess} ==> #{board.key_peg_returns[i]}\n"
+  result = nil
+  turn = 1
+  while result != true && turn <= 12
+    human = Human.new
+    human.get_code_guess
+
+    result = board.compare_guess(human)
+    board.save_guess(human)
+
+    computer.guess_feedback(human, board)
+
+    j = 1
+    i = 0
+    puts "\n--- Game Board -----------"
+    board.codebreaker_guesses.each do
+      |guess| 
+      if j >= 10
+        print "Guess ##{j}: #{guess} ==> #{board.key_peg_returns[i]}\n"
+      else
+        print "Guess ##{j}:  #{guess} ==> #{board.key_peg_returns[i]}\n"
+      end
+      j += 1
+      i += 1
     end
-    j += 1
-    i += 1
+    puts "--------------------------"
+
+    if result == true
+      puts "\nGame over! The codemaker has lost..."
+      puts "CODEBREAKER WINS!\n\n"
+    end
+
+    turn += 1
+
+    if turn > 12
+      puts "\nGame over! The codebreaker has lost..."
+      puts "CODEMAKER WINS!\n\n"
+    end
   end
-  puts "--------------------------"
-
-  if result == true
-    puts "\nGame over! The codemaker has lost..."
-    puts "CODEBREAKER WINS!\n\n"
-   end
-
-  turn += 1
-
-  if turn > 12
-    puts "\nGame over! The codebreaker has lost..."
-    puts "CODEMAKER WINS!\n\n"
-  end
+else
+  puts "Looks like you didn't enter your choice correctly."
 end
