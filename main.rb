@@ -39,7 +39,6 @@ class Computer
 
     # first check equivalent color AND indexes at SAME TIME. Replace with nil
     for i in 0..3
-      p "#{@codemaker_code[i]} and #{codebreaker.code_guess[i]}"
       if @codemaker_code[i] == codebreaker.code_guess[i]
         @key_pegs << "B"
         @codemaker_code[i] = nil
@@ -61,26 +60,26 @@ class Computer
       end
     end
 
-    print "Codemaker Code is #{@codemaker_code}"
-    print "\nCodebreaker guess is #{codebreaker.code_guess}\n"
-
+    # now for remaining values, check for equivalent colors that do not
+    # share same index
     @codemaker_code.each_with_index do
       |code_element, code_idx|
       codebreaker.code_guess.each_with_index do
         |guess_element, guess_idx|
         if code_element == guess_element
-          if code_element == nil 
+          if code_element == nil
             next
           else
-            code_element = nil
-            guess_element = nil
             @key_pegs << "W"
-            
+            p "#{code_element} at #{code_idx} and #{guess_element} at #{guess_idx}" 
+            @codemaker_code[code_idx] = nil
+            codebreaker.code_guess[guess_idx] = nil
           end
         end
       end
     end
 
+    # fill up unused slots in key pegs with nil
     if @key_pegs.length != 4
       remaining_space = 4 - @key_pegs.length 
       for j in 1..remaining_space
