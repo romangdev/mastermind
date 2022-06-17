@@ -1,3 +1,13 @@
+module PlayerNeeds
+  COLORS = ["R", "B", "G", "Y", "P", "O"]
+end
+
+class Player
+  def initialize
+    @codemaker_code =[]
+  end
+end
+
 class Board
   attr_reader :codemaker_code, :codebreaker_guesses, :key_peg_returns
 
@@ -17,13 +27,13 @@ class Board
   end
 end
 
-class Computer 
+class Computer < Player
   attr_reader :codemaker_code, :key_pegs
 
-  COLORS = ["R", "B", "G", "Y", "P", "O"]
+  include PlayerNeeds
 
   def initialize
-    @codemaker_code = []
+    super
   end
 
   # pick a random color combination 
@@ -77,7 +87,6 @@ class Computer
             next
           else
             @key_pegs << "W"
-            print "\n#{code_element} at #{code_idx} is == #{guess_element} at #{guess_idx}\n"
             codemaker_arr[code_idx] = nil
             code_element = nil
             codebreaker_arr[guess_idx] = nil
@@ -116,12 +125,16 @@ class Computer
   end
 end
 
-class Human
+class Human < Player
   attr_reader :code_guess, :maker_or_breaker
 
+  include PlayerNeeds
+
   def initialize
+    super
     @code_guess = []
     @maker_or_breaker = nil
+    @codemaker_code = []
   end
 
   def make_or_break
@@ -129,6 +142,16 @@ class Human
     puts "Type \"B\" if you want to break the code:"
 
     @maker_or_breaker = gets.chomp.upcase
+  end
+
+  def make_code
+    puts "\nMake a code from the following colors (repeats are allowed):\n #{COLORS}\n\n"
+    for i in 1..4
+      puts "Enter color number #{i}:"
+      color = gets.chomp.upcase
+      @codemaker_code << color
+    end
+    puts "\nYou've made the following code: #{@codemaker_code}\n"
   end
 
   def get_code_guess
@@ -151,6 +174,8 @@ choice = human_player.make_or_break
 
 if choice == "M"
   puts "\nGreat! So you're a codeMAKER. Computer is a codeBREAKER.\n"
+  human = Human.new
+  human.make_code
 
 elsif choice == "B"
   puts "\nGreat! So you're a codeBREAKER. Computer is a codeMAKER.\n"
