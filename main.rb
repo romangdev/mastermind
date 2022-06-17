@@ -102,6 +102,7 @@ class Computer
     @key_pegs
   end
 
+  # Used as a method to help in #guess_check
   def tally_colors
     @codemaker_code.reduce(Hash.new(0)) do
       |total, color|
@@ -169,6 +170,11 @@ while result != true && turn <= 12
     i += 1
   end
   puts "--------------------------"
+
+  if result == true
+    puts "\nGame over! The codemaker has lost..."
+    puts "CODEBREAKER WINS!\n\n"
+   end
 
   turn += 1
 
