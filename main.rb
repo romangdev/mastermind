@@ -35,25 +35,58 @@ class Computer
 
   def guess_feedback(codebreaker)
     @key_pegs = []
+    @color_totals = self.tally_colors
+
+    # first check equivalent color AND indexes at SAME TIME
     for i in 0..3
-      for n in 0..3
-        if @codemaker_code[i] == codebreaker.code_guess[n]
-          if i == n 
-            @key_pegs << "B"
-          else 
-            @key_pegs << "W"
-          end
-        end
+      p "#{@codemaker_code[i]} and #{codebreaker.code_guess[i]}"
+      if @codemaker_code[i] == codebreaker.code_guess[i]
+        @key_pegs << "B"
       end
     end
-    if @key_pegs.length != 4
-      remaining_space = 4 - @key_pegs.length 
-      for j in 1..remaining_space
-        @key_pegs << nil
+
+    @codemaker_code.each_with_index do
+      |code_element, code_idx|
+      codebreaker.code_guess.each_with_index do
+        |guess_element, guess_idx|
+
+        # if code_element == guess_element && code_idx == guess_idx
+        #   @key_pegs << "B"
+        # elsif code_element == guess_element
+        #   @key_pegs << "W"
+        next
+
+        # if code_element == guess_element 
+        #   p "#{code_element} at #{@codemaker_code.find_index(code_element)}" + 
+        #   " is == to #{guess_element} at #{codebreaker.code_guess.find_index(guess_element)}"
+
+        #   if @color_totals[code_element] > 0
+        #     p @color_totals
+        #     if codemaker_code.find_index(code_element) == codebreaker.code_guess.find_index(guess_element)
+        #       @key_pegs << "B"
+        #       next
+        #     else
+        #       @key_pegs << "W"
+        #       next
+        #     end
+        #     @color_totals[@codemaker_code.find_index(code_element)] -= 1
+        #     p @codemaker_code
+        #     p codebreaker.code_guess
+        #   else
+        #     @key_pegs << nil
+        #   end
+        # end
       end
-    else
-      @key_pegs
     end
+
+    # if @key_pegs.length != 4
+    #   remaining_space = 4 - @key_pegs.length 
+    #   for j in 1..remaining_space
+    #     @key_pegs << nil
+    #   end
+    # else
+    #   @key_pegs
+    # end
   end
 
   def tally_colors
@@ -96,7 +129,6 @@ computer.choose_code
 board = Board.new(computer.codemaker_code)
 p board.codemaker_code
 hash = computer.tally_colors
-p hash
 
 result = nil
 turn = 1
