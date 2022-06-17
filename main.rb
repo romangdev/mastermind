@@ -26,6 +26,7 @@ class Computer
     @codemaker_code = []
   end
 
+  # pick a random color combination 
   def choose_code
     for i in 1..4
       color = COLORS.sample
@@ -33,38 +34,43 @@ class Computer
     end
   end
 
+  # provide feedback on the player's guess
   def guess_feedback(codebreaker)
+    codemaker_arr = []
+    codemaker_arr.replace(@codemaker_code)
+    codebreaker_arr = []
+    codebreaker_arr.replace(codebreaker.code_guess)
     @key_pegs = []
     @color_totals = self.tally_colors
 
     # first check equivalent color AND indexes at SAME TIME. Replace with nil
     for i in 0..3
-      if @codemaker_code[i] == codebreaker.code_guess[i]
+      if codemaker_arr[i] == codebreaker_arr[i]
         @key_pegs << "B"
-        @codemaker_code[i] = nil
-        codebreaker.code_guess[i] = nil
+        codemaker_arr[i] = nil
+        codebreaker_arr[i] = nil
       end
     end
 
     # delete nil values from both code and code guess arrays
-    @codemaker_code.map do 
+    codemaker_arr.map do 
       |element|
       if element == nil
-        @codemaker_code.delete(nil)
+        codemaker_arr.delete(nil)
       end
     end
-    codebreaker.code_guess.map do 
+    codebreaker_arr.map do 
       |element|
       if element == nil
-        codebreaker.code_guess.delete(nil)
+        codebreaker_arr.delete(nil)
       end
     end
 
     # now for remaining values, check for equivalent colors that do not
     # share same index
-    @codemaker_code.each_with_index do
+    codemaker_arr.each_with_index do
       |code_element, code_idx|
-      codebreaker.code_guess.each_with_index do
+      codebreaker_arr.each_with_index do
         |guess_element, guess_idx|
         if code_element == guess_element
           if code_element == nil
@@ -72,8 +78,8 @@ class Computer
           else
             @key_pegs << "W"
             p "#{code_element} at #{code_idx} and #{guess_element} at #{guess_idx}" 
-            @codemaker_code[code_idx] = nil
-            codebreaker.code_guess[guess_idx] = nil
+            codemaker_arr[code_idx] = nil
+            codebreaker_arr[guess_idx] = nil
           end
         end
       end
