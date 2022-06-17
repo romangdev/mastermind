@@ -37,45 +37,24 @@ class Computer
     @key_pegs = []
     @color_totals = self.tally_colors
 
-    # first check equivalent color AND indexes at SAME TIME
+    # first check equivalent color AND indexes at SAME TIME. Replace with nil
     for i in 0..3
       p "#{@codemaker_code[i]} and #{codebreaker.code_guess[i]}"
       if @codemaker_code[i] == codebreaker.code_guess[i]
         @key_pegs << "B"
+        @codemaker_code[i] = nil
+        codebreaker.code_guess[i] = nil
       end
     end
+
+    @codemaker_code.delete(nil)
+    codebreaker.code_guess.delete(nil)
 
     @codemaker_code.each_with_index do
       |code_element, code_idx|
       codebreaker.code_guess.each_with_index do
         |guess_element, guess_idx|
 
-        # if code_element == guess_element && code_idx == guess_idx
-        #   @key_pegs << "B"
-        # elsif code_element == guess_element
-        #   @key_pegs << "W"
-        next
-
-        # if code_element == guess_element 
-        #   p "#{code_element} at #{@codemaker_code.find_index(code_element)}" + 
-        #   " is == to #{guess_element} at #{codebreaker.code_guess.find_index(guess_element)}"
-
-        #   if @color_totals[code_element] > 0
-        #     p @color_totals
-        #     if codemaker_code.find_index(code_element) == codebreaker.code_guess.find_index(guess_element)
-        #       @key_pegs << "B"
-        #       next
-        #     else
-        #       @key_pegs << "W"
-        #       next
-        #     end
-        #     @color_totals[@codemaker_code.find_index(code_element)] -= 1
-        #     p @codemaker_code
-        #     p codebreaker.code_guess
-        #   else
-        #     @key_pegs << nil
-        #   end
-        # end
       end
     end
 
@@ -142,4 +121,6 @@ while result != true && turn <= 12
 
   computer.guess_feedback(human)
   p computer.key_pegs
+  p computer.codemaker_code
+  p human.code_guess
 end
