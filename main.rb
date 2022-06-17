@@ -47,25 +47,48 @@ class Computer
       end
     end
 
-    @codemaker_code.delete(nil)
-    codebreaker.code_guess.delete(nil)
+    # delete nil values from both code and code guess arrays
+    @codemaker_code.map do 
+      |element|
+      if element == nil
+        @codemaker_code.delete(nil)
+      end
+    end
+    codebreaker.code_guess.map do 
+      |element|
+      if element == nil
+        codebreaker.code_guess.delete(nil)
+      end
+    end
+
+    print "Codemaker Code is #{@codemaker_code}"
+    print "\nCodebreaker guess is #{codebreaker.code_guess}\n"
 
     @codemaker_code.each_with_index do
       |code_element, code_idx|
       codebreaker.code_guess.each_with_index do
         |guess_element, guess_idx|
-
+        if code_element == guess_element
+          if code_element == nil 
+            next
+          else
+            code_element = nil
+            guess_element = nil
+            @key_pegs << "W"
+            
+          end
+        end
       end
     end
 
-    # if @key_pegs.length != 4
-    #   remaining_space = 4 - @key_pegs.length 
-    #   for j in 1..remaining_space
-    #     @key_pegs << nil
-    #   end
-    # else
-    #   @key_pegs
-    # end
+    if @key_pegs.length != 4
+      remaining_space = 4 - @key_pegs.length 
+      for j in 1..remaining_space
+        @key_pegs << nil
+      end
+    else
+      @key_pegs
+    end
   end
 
   def tally_colors
