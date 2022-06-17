@@ -1,5 +1,5 @@
 class Board
-  attr_reader :codemaker_code
+  attr_reader :codemaker_code, :codebreaker_guesses, :key_peg_returns
 
   def initialize(codemaker_code)
     @codemaker_code = codemaker_code
@@ -35,7 +35,7 @@ class Computer
   end
 
   # provide feedback on the player's guess
-  def guess_feedback(codebreaker)
+  def guess_feedback(codebreaker, board)
     codemaker_arr = []
     codemaker_arr.replace(@codemaker_code)
     codebreaker_arr = []
@@ -77,9 +77,12 @@ class Computer
             next
           else
             @key_pegs << "W"
-            p "#{code_element} at #{code_idx} and #{guess_element} at #{guess_idx}" 
+            print "\n#{code_element} at #{code_idx} is == #{guess_element} at #{guess_idx}\n"
             codemaker_arr[code_idx] = nil
+            code_element = nil
             codebreaker_arr[guess_idx] = nil
+            guess_element = nil
+            next
           end
         end
       end
@@ -94,6 +97,9 @@ class Computer
     else
       @key_pegs
     end
+
+    board.key_peg_returns << @key_pegs
+    @key_pegs
   end
 
   def tally_colors
@@ -117,16 +123,17 @@ class Human
   end
 
   def get_code_guess
-    puts "First color?:"
-    first_color = gets.chomp
+    puts "\nChoose from the following colors (repeats are allowed):"
+    puts "R, B, G, Y, P, O\n"
+    puts "\nFirst color?:"
+    first_color = gets.chomp.upcase
     puts "Second color?:"
-    second_color = gets.chomp
+    second_color = gets.chomp.upcase
     puts "Third color?:"
-    third_color = gets.chomp
+    third_color = gets.chomp.upcase
     puts "Fourth color?:"
-    fourth_color = gets.chomp
+    fourth_color = gets.chomp.upcase
     @code_guess << first_color << second_color << third_color << fourth_color
-    puts "\n#{@code_guess}"
   end
 end
 
@@ -145,10 +152,28 @@ while result != true && turn <= 12
 
   result = board.compare_guess(human)
   board.save_guess(human)
+
+  computer.guess_feedback(human, board)
+
+  j = 1
+  i = 0
+  puts "\n--- Game Board -----------"
+  board.codebreaker_guesses.each do
+    |guess| 
+    if j >= 10
+      print "Guess ##{j}: #{guess} ==> #{board.key_peg_returns[i]}\n"
+    else
+      print "Guess ##{j}:  #{guess} ==> #{board.key_peg_returns[i]}\n"
+    end
+    j += 1
+    i += 1
+  end
+  puts "--------------------------"
+
   turn += 1
 
-  computer.guess_feedback(human)
-  p computer.key_pegs
-  p computer.codemaker_code
-  p human.code_guess
+  if turn > 12
+    puts "\nGame over! The codebreaker has lost..."
+    puts "CODEMAKER WINS!\n\n"
+  end
 end
