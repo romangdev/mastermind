@@ -147,9 +147,18 @@ class Human < Player
   def make_code
     puts "\nMake a code from the following colors (repeats are allowed):\n #{COLORS}\n\n"
     for i in 1..4
-      puts "Enter color number #{i}:"
-      color = gets.chomp.upcase
-      @codemaker_code << color
+      begin
+        puts "Enter color number #{i}:"
+        color = gets.chomp.upcase
+        if color != "R" && color != "B" && color != "G" && color != "Y" && color != "P" && color != "O" 
+          raise "ERROR: Incorrect input"
+        end
+      rescue 
+        puts "\nLooks like you've entered an incorrect input. Please try again.\n"
+        retry
+      else
+        @codemaker_code << color
+      end
     end
     puts "\nYou've made the following code: #{@codemaker_code}\n"
   end
