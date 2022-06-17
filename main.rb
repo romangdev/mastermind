@@ -165,16 +165,23 @@ class Human < Player
 
   def get_code_guess
     puts "\nChoose from the following colors (repeats are allowed):"
-    puts "R, B, G, Y, P, O\n"
-    puts "\nFirst color?:"
-    first_color = gets.chomp.upcase
-    puts "Second color?:"
-    second_color = gets.chomp.upcase
-    puts "Third color?:"
-    third_color = gets.chomp.upcase
-    puts "Fourth color?:"
-    fourth_color = gets.chomp.upcase
-    @code_guess << first_color << second_color << third_color << fourth_color
+    puts "R, B, G, Y, P, O\n\n"
+
+    for i in 1..4
+      begin
+        puts "Guess color #{i}:"
+        color_guess = gets.chomp.upcase
+        if color_guess != "R" && color_guess != "B" && color_guess != "G" &&
+           color_guess != "Y" && color_guess != "P" && color_guess != "O"
+           raise "ERROR: Incorrect input"
+        end
+      rescue
+        puts "\nLooks like you've entered an incorrect input. Please try again.\n"
+        retry
+      else
+        @code_guess << color_guess
+      end
+    end
   end
 end
 
