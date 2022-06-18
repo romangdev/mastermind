@@ -36,7 +36,7 @@ class Computer < Player
     super
   end
 
-  # pick a random color combination 
+  # CODEMAKER: Computer picks a random color combination for code
   def choose_code
     for i in 1..4
       color = COLORS.sample
@@ -51,8 +51,6 @@ class Computer < Player
     codebreaker_arr = []
     codebreaker_arr.replace(codebreaker.code_guess)
     @key_pegs = []
-    @color_totals = self.tally_colors
-
     # first check equivalent color AND indexes at SAME TIME. Replace with nil
     for i in 0..3
       if codemaker_arr[i] == codebreaker_arr[i]
@@ -61,7 +59,6 @@ class Computer < Player
         codebreaker_arr[i] = nil
       end
     end
-
     # delete nil values from both code and code guess arrays
     codemaker_arr.map do 
       |element|
@@ -75,7 +72,6 @@ class Computer < Player
         codebreaker_arr.delete(nil)
       end
     end
-
     # now for remaining values, check for equivalent colors that do not
     # share same index
     codemaker_arr.each_with_index do
@@ -96,7 +92,6 @@ class Computer < Player
         end
       end
     end
-
     # fill up unused slots in key pegs with nil
     if @key_pegs.length != 4
       remaining_space = 4 - @key_pegs.length 
@@ -109,19 +104,6 @@ class Computer < Player
 
     board.key_peg_returns << @key_pegs
     @key_pegs
-  end
-
-  # Used as a method to help in #guess_check
-  def tally_colors
-    @codemaker_code.reduce(Hash.new(0)) do
-      |total, color|
-      if total[color] == nil
-        total[color] = 0
-      else 
-        total[color] += 1
-      end
-      total
-    end
   end
 end
 
@@ -137,6 +119,7 @@ class Human < Player
     @codemaker_code = []
   end
 
+  # Player chooses if they want to be the codemaker or codebreaker
   def make_or_break
     puts "\nType \"M\" if you want to make the code."
     puts "Type \"B\" if you want to break the code:"
@@ -144,11 +127,12 @@ class Human < Player
     @maker_or_breaker = gets.chomp.upcase
   end
 
+  # CODEMAKER: Player makes the code for the computer to guess
   def make_code
     puts "\nMake a code from the following colors (repeats are allowed):\n #{COLORS}\n\n"
     for i in 1..4
       begin
-        puts "Enter color number #{i}:"
+        puts "Enter color ##{i}:"
         color = gets.chomp.upcase
         if color != "R" && color != "B" && color != "G" && color != "Y" && color != "P" && color != "O" 
           raise "ERROR: Incorrect input"
@@ -163,6 +147,7 @@ class Human < Player
     puts "\nYou've made the following code: #{@codemaker_code}\n"
   end
 
+  # CODEBREAKER: Player guesses the code if computer is the codemaker
   def get_code_guess
     puts "\nChoose from the following colors (repeats are allowed):"
     puts "R, B, G, Y, P, O\n\n"
@@ -185,40 +170,8 @@ class Human < Player
   end
 end
 
-human_player = Human.new
-choice = human_player.make_or_break
-
-if choice == "M"
-  puts "\nGreat! So you're a codeMAKER. Computer is a codeBREAKER.\n"
-  human = Human.new
-  human.make_code
-
-elsif choice == "B"
-  puts "\nGreat! So you're a codeBREAKER. Computer is a codeMAKER.\n"
-  sleep 2
-  puts "\nLet's begin!\n"
-  sleep 1
-  puts "\nComputer has chosen their code. Time for you to get guessin'...\n"
-  sleep 2
-
-  computer = Computer.new
-  computer.choose_code
-
-  board = Board.new(computer.codemaker_code)
-  hash = computer.tally_colors
-
-  result = nil
-  turn = 1
-  while result != true && turn <= 12
-    human = Human.new
-    human.get_code_guess
-
-    result = board.compare_guess(human)
-    board.save_guess(human)
-
-    computer.guess_feedback(human, board)
-
-    j = 1
+def display_board(board)
+  j = 1
     i = 0
     puts "\n--- Game Board -----------"
     board.codebreaker_guesses.each do
@@ -232,6 +185,41 @@ elsif choice == "B"
       i += 1
     end
     puts "--------------------------"
+end
+
+human_player = Human.new
+choice = human_player.make_or_break
+
+if choice == "M"
+  puts "\nGreat! So you're a codeMAKER. Computer is a codeBREAKER.\n"
+  human = Human.new
+  human.make_code
+
+elsif choice == "B"
+  puts "\nGreat! So you're a codeBREAKER. Computer is a codeMAKER.\n"
+  sleep 1
+  puts "\nLet's begin!\n"
+  sleep 1
+  puts "\nComputer has chosen their code. Time for you to get guessin'...\n"
+  sleep 1
+
+  computer = Computer.new
+  computer.choose_code
+
+  board = Board.new(computer.codemaker_code)
+
+  result = nil
+  turn = 1
+  while result != true && turn <= 12
+    human = Human.new
+    human.get_code_guess
+
+    result = board.compare_guess(human)
+    board.save_guess(human)
+
+    computer.guess_feedback(human, board)
+
+    display_board(board)
 
     if result == true
       puts "\nGame over! The codemaker has lost..."
@@ -243,6 +231,7 @@ elsif choice == "B"
     if turn > 12
       puts "\nGame over! The codebreaker has lost..."
       puts "CODEMAKER WINS!\n\n"
+      puts "The secret code was: #{computer.codemaker_code}\n\n"
     end
   end
 else
