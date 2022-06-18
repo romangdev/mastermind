@@ -93,13 +93,14 @@ module Mastermind
   # A class to represent methods that the computer can take and attributes it holds
   class Computer < Player
     attr_reader :codemaker_code, :key_pegs
-    attr_accessor :code_guess, :hold_code_guess
+    attr_accessor :code_guess, :hold_code_guess, :final_position_colors
 
     include PlayerNeeds
 
     def initialize
       super
       @hold_code_guess = []
+      @final_position_colors = %w[R B G Y P O]
     end
 
     # CODEMAKER: Computer picks a random color combination for code
@@ -114,6 +115,19 @@ module Mastermind
     def guess_code(code)
       @hold_code_guess = []
 
+      final_position_colors.map do |element|
+        final_position_colors.delete(element) if element == @incorrect_guess
+      end
+
+      if @code_guess.count(nil) == 1
+        final_color = final_position_colors.sample
+        @code_guess[@code_guess.find_index(nil)] = final_color
+        final_position_colors.map do
+          |element|
+          final_position_colors.delete(element) if element == final_color
+        end
+      end
+      
       @code_guess.each_with_index do |element, idx|
         if element.nil?
           @code_guess[idx] = COLORS.sample
@@ -126,10 +140,16 @@ module Mastermind
         @hold_code_guess << element
       end
 
+      count = 0 
+      @code_guess.each_with_index {|element, idx| count += 1 if element == code[idx]}
+
       @code_guess.each_with_index do |element, idx|
         if element == code[idx]
           next
         else
+          if count == 3
+            @incorrect_guess = @code_guess[idx]
+          end
           @code_guess[idx] = nil
         end
       end
