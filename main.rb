@@ -7,49 +7,6 @@ class Player
     @codemaker_code = []
     @code_guess = []
   end
-end
-
-class Board
-  attr_reader :codemaker_code, :codebreaker_guesses, :key_peg_returns
-
-  def initialize(codemaker_code)
-    @codemaker_code = codemaker_code
-    @codebreaker_guesses = []
-    @key_peg_returns = []
-  end
-
-  def compare_guess(codebreaker)
-   result = (@codemaker_code == codebreaker.code_guess) ? true : false
-   result
-  end
-
-  def save_guess(codebreaker_guess)
-    @codebreaker_guesses << codebreaker_guess.code_guess
-  end
-
-  def save_guess_computer(codebreaker_guess)
-    @codebreaker_guesses << codebreaker_guess.hold_code_guess
-  end
-end
-
-class Computer < Player
-  attr_reader :codemaker_code, :key_pegs
-  attr_accessor :code_guess, :hold_code_guess
-
-  include PlayerNeeds
-
-  def initialize
-    super
-    @hold_code_guess = []
-  end
-
-  # CODEMAKER: Computer picks a random color combination for code
-  def choose_code
-    for i in 1..4
-      color = COLORS.sample
-      @codemaker_code << color
-    end
-  end
 
   # provide feedback on the player's guess
   def guess_feedback(codebreaker, board)
@@ -112,8 +69,142 @@ class Computer < Player
     board.key_peg_returns << @key_pegs
     @key_pegs
   end
+end
 
-  def guess_feedback_hold(codebreaker, board)
+class Board
+  attr_reader :codemaker_code, :codebreaker_guesses, :key_peg_returns
+
+  def initialize(codemaker_code)
+    @codemaker_code = codemaker_code
+    @codebreaker_guesses = []
+    @key_peg_returns = []
+  end
+
+  def compare_guess(codebreaker)
+   result = (@codemaker_code == codebreaker.code_guess) ? true : false
+   result
+  end
+
+  def save_guess(codebreaker_guess)
+    @codebreaker_guesses << codebreaker_guess.code_guess
+  end
+
+  def save_guess_computer(codebreaker_guess)
+    @codebreaker_guesses << codebreaker_guess.hold_code_guess
+  end
+end
+
+class Computer < Player
+  attr_reader :codemaker_code, :key_pegs
+  attr_accessor :code_guess, :hold_code_guess
+
+  include PlayerNeeds
+
+  def initialize
+    super
+    @hold_code_guess = []
+  end
+
+  # CODEMAKER: Computer picks a random color combination for code
+  def choose_code
+    for i in 1..4
+      color = COLORS.sample
+      @codemaker_code << color
+    end
+  end
+
+  # Computer takes a shot at guessing the human made code
+  def guess_code(code)
+    @hold_code_guess = []
+
+    @code_guess.each_with_index do
+      |element, idx|
+      if element == nil
+        @code_guess[idx] = COLORS.sample
+      else
+        next
+      end
+    end
+
+    @code_guess.each do
+      |element|
+      @hold_code_guess << element
+    end
+
+    @code_guess.each_with_index do
+      |element, idx|
+      if element == code[idx]
+        next
+      else
+        @code_guess[idx] = nil
+      end
+    end
+  end
+end
+
+class Human < Player
+  attr_reader :code_guess, :maker_or_breaker, :codemaker_code
+
+  include PlayerNeeds
+
+  def initialize
+    super
+    @maker_or_breaker = nil
+    @codemaker_code = []
+    @hold_code_guess = []
+  end
+
+  # Player chooses if they want to be the codemaker or codebreaker
+  def make_or_break
+    puts "\nType \"M\" if you want to make the code."
+    puts "Type \"B\" if you want to break the code:"
+
+    @maker_or_breaker = gets.chomp.upcase
+  end
+
+  # CODEMAKER: Player makes the code for the computer to guess
+  def make_code
+    puts "\nMake a code from the following colors (repeats are allowed):\n #{COLORS}\n\n"
+    for i in 1..4
+      begin
+        puts "Enter color ##{i}:"
+        color = gets.chomp.upcase
+        if color != "R" && color != "B" && color != "G" && color != "Y" && color != "P" && color != "O" 
+          raise "ERROR: Incorrect input"
+        end
+      rescue 
+        puts "\nLooks like you've entered an incorrect input. Please try again.\n"
+        retry
+      else
+        @codemaker_code << color
+      end
+    end
+    puts "\nYou've made the following code: #{@codemaker_code}\n"
+  end
+
+  # CODEBREAKER: Player guesses the code if computer is the codemaker
+  def get_code_guess
+    puts "\nChoose from the following colors (repeats are allowed):"
+    puts "R, B, G, Y, P, O\n\n"
+
+    for i in 1..4
+      begin
+        puts "Guess color #{i}:"
+        color_guess = gets.chomp.upcase
+        if color_guess != "R" && color_guess != "B" && color_guess != "G" &&
+           color_guess != "Y" && color_guess != "P" && color_guess != "O"
+           raise "ERROR: Incorrect input"
+        end
+      rescue
+        puts "\nLooks like you've entered an incorrect input. Please try again.\n"
+        retry
+      else
+        @code_guess << color_guess
+      end
+    end
+  end
+
+  def guess_feedback(codebreaker, board)
     codemaker_arr = []
     codemaker_arr.replace(@codemaker_code)
     codebreaker_arr = []
@@ -173,96 +264,6 @@ class Computer < Player
     board.key_peg_returns << @key_pegs
     @key_pegs
   end
-
-  # Computer takes a shot at guessing the human made code
-  def guess_code(code)
-    @hold_code_guess = []
-
-    @code_guess.each_with_index do
-      |element, idx|
-      if element == nil
-        @code_guess[idx] = COLORS.sample
-      else
-        next
-      end
-    end
-
-    @code_guess.each do
-      |element|
-      @hold_code_guess << element
-    end
-
-    @code_guess.each_with_index do
-      |element, idx|
-      if element == code[idx]
-        next
-      else
-        @code_guess[idx] = nil
-      end
-    end
-  end
-end
-
-class Human < Player
-  attr_reader :code_guess, :maker_or_breaker, :codemaker_code
-
-  include PlayerNeeds
-
-  def initialize
-    super
-    @maker_or_breaker = nil
-    @codemaker_code = []
-  end
-
-  # Player chooses if they want to be the codemaker or codebreaker
-  def make_or_break
-    puts "\nType \"M\" if you want to make the code."
-    puts "Type \"B\" if you want to break the code:"
-
-    @maker_or_breaker = gets.chomp.upcase
-  end
-
-  # CODEMAKER: Player makes the code for the computer to guess
-  def make_code
-    puts "\nMake a code from the following colors (repeats are allowed):\n #{COLORS}\n\n"
-    for i in 1..4
-      begin
-        puts "Enter color ##{i}:"
-        color = gets.chomp.upcase
-        if color != "R" && color != "B" && color != "G" && color != "Y" && color != "P" && color != "O" 
-          raise "ERROR: Incorrect input"
-        end
-      rescue 
-        puts "\nLooks like you've entered an incorrect input. Please try again.\n"
-        retry
-      else
-        @codemaker_code << color
-      end
-    end
-    puts "\nYou've made the following code: #{@codemaker_code}\n"
-  end
-
-  # CODEBREAKER: Player guesses the code if computer is the codemaker
-  def get_code_guess
-    puts "\nChoose from the following colors (repeats are allowed):"
-    puts "R, B, G, Y, P, O\n\n"
-
-    for i in 1..4
-      begin
-        puts "Guess color #{i}:"
-        color_guess = gets.chomp.upcase
-        if color_guess != "R" && color_guess != "B" && color_guess != "G" &&
-           color_guess != "Y" && color_guess != "P" && color_guess != "O"
-           raise "ERROR: Incorrect input"
-        end
-      rescue
-        puts "\nLooks like you've entered an incorrect input. Please try again.\n"
-        retry
-      else
-        @code_guess << color_guess
-      end
-    end
-  end
 end
 
 def display_board(board)
@@ -310,7 +311,7 @@ if choice == "M"
     turn +=1
 
     board.save_guess_computer(computer)
-    computer.guess_feedback_hold(computer, board)
+    human.guess_feedback(computer, board)
 
     display_board(board)
   end
