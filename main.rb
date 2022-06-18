@@ -284,7 +284,7 @@ if choice == 'M'
   human = Mastermind::Human.new
   human.make_code
 
-  board = Board.new(human.codemaker_code)
+  board = Mastermind::Board.new(human.codemaker_code)
 
   computer = Mastermind::Computer.new
   computer.code_guess = computer.code_guess.fill(nil, computer.code_guess.size, 4)
@@ -323,7 +323,7 @@ elsif choice == 'B'
   computer = Mastermind::Computer.new
   computer.choose_code
 
-  board = Board.new(computer.codemaker_code)
+  board = Mastermind::Board.new(computer.codemaker_code)
 
   result = nil
   turn = 1
