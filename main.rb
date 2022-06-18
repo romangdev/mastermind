@@ -113,6 +113,68 @@ class Computer < Player
     @key_pegs
   end
 
+  def guess_feedback_hold(codebreaker, board)
+    codemaker_arr = []
+    codemaker_arr.replace(@codemaker_code)
+    codebreaker_arr = []
+    codebreaker_arr.replace(codebreaker.hold_code_guess)
+    @key_pegs = []
+    # first check equivalent color AND indexes at SAME TIME. Replace with nil
+    for i in 0..3
+      if codemaker_arr[i] == codebreaker_arr[i]
+        @key_pegs << "B"
+        codemaker_arr[i] = nil
+        codebreaker_arr[i] = nil
+      end
+    end
+    # delete nil values from both code and code guess arrays
+    codemaker_arr.map do 
+      |element|
+      if element == nil
+        codemaker_arr.delete(nil)
+      end
+    end
+    codebreaker_arr.map do 
+      |element|
+      if element == nil
+        codebreaker_arr.delete(nil)
+      end
+    end
+    # now for remaining values, check for equivalent colors that do not
+    # share same index
+    codemaker_arr.each_with_index do
+      |code_element, code_idx|
+      codebreaker_arr.each_with_index do
+        |guess_element, guess_idx|
+        if code_element == guess_element
+          if code_element == nil
+            next
+          else
+            @key_pegs << "W"
+            codemaker_arr[code_idx] = nil
+            code_element = nil
+            codebreaker_arr[guess_idx] = nil
+            guess_element = nil
+            next
+          end
+        end
+      end
+    end
+    # fill up unused slots in key pegs with nil
+    if @key_pegs.length != 4
+      remaining_space = 4 - @key_pegs.length 
+      for j in 1..remaining_space
+        @key_pegs << nil
+      end
+    else
+      @key_pegs
+    end
+
+    board.key_peg_returns << @key_pegs
+    @key_pegs
+  end
+
+  # Computer takes a shot at guessing the human made code
   def guess_code(code)
     @hold_code_guess = []
 
@@ -130,7 +192,6 @@ class Computer < Player
       @hold_code_guess << element
     end
 
-    print "\nRandom: #{@code_guess}"
     @code_guess.each_with_index do
       |element, idx|
       if element == code[idx]
@@ -139,7 +200,6 @@ class Computer < Player
         @code_guess[idx] = nil
       end
     end
-    print "\nCleaned: #{@code_guess}\n"
   end
 end
 
@@ -250,8 +310,9 @@ if choice == "M"
     turn +=1
 
     board.save_guess_computer(computer)
-    p computer.hold_code_guess
-    p board.codebreaker_guesses
+    computer.guess_feedback_hold(computer, board)
+
+    display_board(board)
   end
 
   if turn > 12 && computer.code_guess != human.codemaker_code
