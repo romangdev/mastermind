@@ -29,7 +29,8 @@ class Board
 end
 
 class Computer < Player
-  attr_reader :codemaker_code, :key_pegs, :code_guess
+  attr_reader :codemaker_code, :key_pegs
+  attr_accessor :code_guess
 
   include PlayerNeeds
 
@@ -108,9 +109,6 @@ class Computer < Player
   end
 
   def guess_code(code)
-    @code_guess = @code_guess.fill(nil, @code_guess.size, 4)
-    turn = 1
-    while turn <= 12
       @code_guess.each_with_index do
         |element, idx|
         if element == nil
@@ -119,7 +117,6 @@ class Computer < Player
           next
         end
       end
-      print "\nTurn #{turn}"
       print "\nRandom: #{@code_guess}"
       @code_guess.each_with_index do
         |element, idx|
@@ -130,19 +127,6 @@ class Computer < Player
         end
       end
       print "\nCleaned: #{@code_guess}\n"
-      if @code_guess == code
-        turn = 12
-      end
-      sleep 1
-      turn +=1
-    end
-    if turn > 12 && @code_guess != code
-      puts "\nGame over! Codebreaker (computer) loses..."
-      puts "CODEMAKER (you) WINS!\n\n"
-    else
-      puts "\nGame over! Codemaker (you) loses..."
-      puts "CODEBREAKER (computer) WINS!\n\n"
-    end
   end
 end
 
@@ -231,14 +215,37 @@ end
 human_player = Human.new
 choice = human_player.make_or_break
 
+# If human player decides to be the codemaker, execute the following...
 if choice == "M"
   puts "\nGreat! So you're a codeMAKER. Computer is a codeBREAKER.\n"
   human = Human.new
   human.make_code
 
   computer = Computer.new
-  computer.guess_code(human.codemaker_code)
+  computer.code_guess = computer.code_guess.fill(nil, computer.code_guess.size, 4)
 
+  turn = 1
+  while turn <= 12
+    print "\nTurn #{turn}"
+    computer.guess_code(human.codemaker_code)
+    if computer.code_guess == human.codemaker_code
+      turn = 12
+    end
+    sleep 1
+    turn +=1
+
+    if turn > 12 && computer.code_guess != human.codemaker_code
+      puts "\nGame over! Codebreaker (computer) loses..."
+      puts "CODEMAKER (you) WINS!\n\n"
+    else
+      puts "\nGame over! Codemaker (you) loses..."
+      puts "CODEBREAKER (computer) WINS!\n\n"
+    end
+
+    # board.save_guess(computer)
+  end
+
+# If human player decides to be a codebreaker, execute the following...
 elsif choice == "B"
   puts "\nGreat! So you're a codeBREAKER. Computer is a codeMAKER.\n"
   sleep 1
