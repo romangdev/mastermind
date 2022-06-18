@@ -109,20 +109,40 @@ class Computer < Player
 
   def guess_code(code)
     @code_guess = @code_guess.fill(nil, @code_guess.size, 4)
-    @code_guess.each_with_index do
-      |element, idx|
-      if element == nil
-        @code_guess[idx] = COLORS.sample
-      else
-        next
+    turn = 1
+    while turn <= 12
+      @code_guess.each_with_index do
+        |element, idx|
+        if element == nil
+          @code_guess[idx] = COLORS.sample
+        else
+          next
+        end
       end
+      print "\nTurn #{turn}"
+      print "\nRandom: #{@code_guess}"
+      @code_guess.each_with_index do
+        |element, idx|
+        if element == code[idx]
+          next
+        else
+          @code_guess[idx] = nil
+        end
+      end
+      print "\nCleaned: #{@code_guess}\n"
+      if @code_guess == code
+        turn = 12
+      end
+      sleep 1
+      turn +=1
     end
-    @code_guess.each_with_index do
-      |element, idx|
-      if element == code[idx]
-        next
-      elsif
-
+    if turn > 12 && @code_guess != code
+      puts "\nGame over! Codebreaker (computer) loses..."
+      puts "CODEMAKER (you) WINS!\n\n"
+    else
+      puts "\nGame over! Codemaker (you) loses..."
+      puts "CODEBREAKER (computer) WINS!\n\n"
+    end
   end
 end
 
