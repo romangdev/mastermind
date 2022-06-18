@@ -4,7 +4,8 @@ end
 
 class Player
   def initialize
-    @codemaker_code =[]
+    @codemaker_code = []
+    @code_guess = []
   end
 end
 
@@ -28,7 +29,7 @@ class Board
 end
 
 class Computer < Player
-  attr_reader :codemaker_code, :key_pegs
+  attr_reader :codemaker_code, :key_pegs, :code_guess
 
   include PlayerNeeds
 
@@ -105,16 +106,33 @@ class Computer < Player
     board.key_peg_returns << @key_pegs
     @key_pegs
   end
+
+  def guess_code(code)
+    @code_guess = @code_guess.fill(nil, @code_guess.size, 4)
+    @code_guess.each_with_index do
+      |element, idx|
+      if element == nil
+        @code_guess[idx] = COLORS.sample
+      else
+        next
+      end
+    end
+    @code_guess.each_with_index do
+      |element, idx|
+      if element == code[idx]
+        next
+      elsif
+
+  end
 end
 
 class Human < Player
-  attr_reader :code_guess, :maker_or_breaker
+  attr_reader :code_guess, :maker_or_breaker, :codemaker_code
 
   include PlayerNeeds
 
   def initialize
     super
-    @code_guess = []
     @maker_or_breaker = nil
     @codemaker_code = []
   end
@@ -187,6 +205,9 @@ def display_board(board)
     puts "--------------------------"
 end
 
+
+# Run the game below
+
 human_player = Human.new
 choice = human_player.make_or_break
 
@@ -194,6 +215,9 @@ if choice == "M"
   puts "\nGreat! So you're a codeMAKER. Computer is a codeBREAKER.\n"
   human = Human.new
   human.make_code
+
+  computer = Computer.new
+  computer.guess_code(human.codemaker_code)
 
 elsif choice == "B"
   puts "\nGreat! So you're a codeBREAKER. Computer is a codeMAKER.\n"
