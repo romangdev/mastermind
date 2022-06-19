@@ -298,7 +298,7 @@ when 'M'
   board = Mastermind::Board.new(human.codemaker_code)
 
   computer = Mastermind::Computer.new
-  computer.code_guess = computer.code_guess.fill(nil, computer.code_guess.size, 4)
+  computer.code_guess.fill(nil, computer.code_guess.size, 4)
 
   tally = computer.tally_code_colors(human.codemaker_code)
 
@@ -311,8 +311,8 @@ when 'M'
     turn += 1
 
     board.save_guess_computer(computer)
-    computer.clean_code_guess(human.codemaker_code, tally)
     human.guess_feedback(computer, board)
+    computer.clean_code_guess(human.codemaker_code, tally)
 
     display_board(board)
   end
