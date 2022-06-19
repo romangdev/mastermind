@@ -223,59 +223,7 @@ module Mastermind
       end
     end
 
-    # Return key pegs to signify how close a player's guess was
-    def guess_feedback(codebreaker, board)
-      codemaker_arr = []
-      codemaker_arr.replace(@codemaker_code)
-      codebreaker_arr = []
-      codebreaker_arr.replace(codebreaker.hold_code_guess)
-      @key_pegs = []
-      # first check equivalent color AND indexes at SAME TIME. Replace with nil
-      for i in 0..3
-        next unless codemaker_arr[i] == codebreaker_arr[i]
 
-        @key_pegs << 'B'
-        codemaker_arr[i] = nil
-        codebreaker_arr[i] = nil
-      end
-      # delete nil values from both code and code guess arrays
-      codemaker_arr.map do |element|
-        codemaker_arr.delete(nil) if element.nil?
-      end
-      codebreaker_arr.map do |element|
-        codebreaker_arr.delete(nil) if element.nil?
-      end
-      # now for remaining values, check for equivalent colors that do not
-      # share same index
-      codemaker_arr.each_with_index do |code_element, code_idx|
-        codebreaker_arr.each_with_index do |guess_element, guess_idx|
-          if code_element == guess_element
-            if code_element.nil?
-              next
-            else
-              @key_pegs << 'W'
-              codemaker_arr[code_idx] = nil
-              code_element = nil
-              codebreaker_arr[guess_idx] = nil
-              guess_element = nil
-              next
-            end
-          end
-        end
-      end
-      # fill up unused slots in key pegs with nil
-      if @key_pegs.length != 4
-        remaining_space = 4 - @key_pegs.length
-        for j in 1..remaining_space
-          @key_pegs << nil
-        end
-      else
-        @key_pegs
-      end
-
-      board.key_peg_returns << @key_pegs
-      @key_pegs
-    end
   end
 end
 
