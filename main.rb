@@ -46,7 +46,6 @@ module Mastermind
               codemaker_arr[code_idx] = nil
               code_element = nil
               codebreaker_arr[guess_idx] = nil
-              guess_element = nil
               next
             end
           end
@@ -102,6 +101,10 @@ module Mastermind
       @hold_code_guess = []
       @final_position_colors = %w[R B G Y P O]
       @correct_color = nil
+      @idx1 = nil
+      @idx2 = nil
+      @idx3 = nil
+      @idx4 = nil
     end
 
     # CODEMAKER: Computer picks a random color combination for code
@@ -115,7 +118,7 @@ module Mastermind
     # Computer takes a shot at guessing the human made code
     def guess_code(code)
       @hold_code_guess = []
-      @count = 0 
+      @count = 0
 
       final_position_colors.map do |element|
         final_position_colors.delete(element) if element == @incorrect_guess
@@ -124,23 +127,19 @@ module Mastermind
       if @code_guess.count(nil) == 1
         final_color = final_position_colors.sample
         @code_guess[@code_guess.find_index(nil)] = final_color
-        final_position_colors.map do
-          |element|
+        final_position_colors.map do |element|
           final_position_colors.delete(element) if element == final_color
         end
       end
-      
+
       # GET A RANDOM NIL INDEX AND REPLACE IT WITH THE CORRECT COLOR
-      if @correct_color != nil
+      unless @correct_color.nil?
         random = false
         until random == true
-          puts "Before random: #{@code_guess}"
           number = rand(0..3)
-          puts "NUMBER: #{number}"
-          if @code_guess[number].nil? 
+          if @code_guess[number].nil?
             @code_guess[number] = @correct_color
             random = true
-            puts "Guessed #{@correct_color} at index #{number}"
           else
             next
           end
@@ -160,23 +159,32 @@ module Mastermind
         @hold_code_guess << element
       end
 
-      @code_guess.each_with_index {|element, idx| @count += 1 if element == code[idx]}
+      @code_guess.each_with_index { |element, idx| @count += 1 if element == code[idx] }
       @code_guess.each_with_index do |element, idx|
-        if element != code[idx] && @count == 3
-          @incorrect_guess = @code_guess[idx]
-        end
+        @incorrect_guess = @code_guess[idx] if element != code[idx] && @count == 3
       end
     end
 
     def clean_code_guess(code, tally)
       @code_guess.each_with_index do |element, idx|
         if element == code[idx]
-          tally[element] -= 1
-          puts tally
-          next
+          if [@idx1, @idx2, @idx3, @idx4].include?(idx)
+            next
+          elsif @idx1.nil?
+            @idx1 = idx
+            tally[element] -= 1
+          elsif @idx2.nil?
+            @idx2 = idx
+            tally[element] -= 1
+          elsif @idx3.nil?
+            @idx3 = idx
+            tally[element] -= 1
+          elsif @idx4.nil?
+            @idx4 = idx
+            tally[element] -= 1
+          end
         else
           if code.include?(element) && tally[element] > 0
-            puts "#{element} is in there... just wrong position!"
             @correct_color = element
           end
           @code_guess[idx] = nil
@@ -185,10 +193,9 @@ module Mastermind
     end
 
     def tally_code_colors(code)
-      code.reduce(Hash.new(0)) do |total, color|
+      code.each_with_object(Hash.new(0)) do |color, total|
         total[color] = 0 if total[color].nil?
         total[color] += 1
-        total
       end
     end
   end
@@ -255,8 +262,6 @@ module Mastermind
         end
       end
     end
-
-
   end
 end
 
@@ -284,7 +289,8 @@ human_player = Mastermind::Human.new
 choice = human_player.make_or_break
 
 # If human player decides to be the codemaker, execute the following...
-if choice == 'M'
+case choice
+when 'M'
   puts "\nGreat! So you're a codeMAKER. Computer is a codeBREAKER.\n"
   human = Mastermind::Human.new
   human.make_code
@@ -320,7 +326,7 @@ if choice == 'M'
   end
 
 # If human player decides to be a codebreaker, execute the following...
-elsif choice == 'B'
+when 'B'
   puts "\nGreat! So you're a codeBREAKER. Computer is a codeMAKER.\n"
   sleep 1
   puts "\nLet's begin!\n"
