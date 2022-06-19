@@ -101,6 +101,7 @@ module Mastermind
       super
       @hold_code_guess = []
       @final_position_colors = %w[R B G Y P O]
+      @correct_color = nil
     end
 
     # CODEMAKER: Computer picks a random color combination for code
@@ -129,6 +130,24 @@ module Mastermind
         end
       end
       
+      # GET A RANDOM NIL INDEX AND REPLACE IT WITH THE CORRECT COLOR
+      if @correct_color != nil
+        random = false
+        until random == true
+          puts "Before random: #{@code_guess}"
+          number = rand(0..3)
+          puts "NUMBER: #{number}"
+          if @code_guess[number].nil? 
+            @code_guess[number] = @correct_color
+            random = true
+            puts "Guessed #{@correct_color} at index #{number}"
+          else
+            next
+          end
+        end
+        @correct_color = nil
+      end
+
       @code_guess.each_with_index do |element, idx|
         if element.nil?
           @code_guess[idx] = COLORS.sample
@@ -149,13 +168,27 @@ module Mastermind
       end
     end
 
-    def clean_code_guess(code)
+    def clean_code_guess(code, tally)
       @code_guess.each_with_index do |element, idx|
         if element == code[idx]
+          tally[element] -= 1
+          puts tally
           next
         else
+          if code.include?(element) && tally[element] > 0
+            puts "#{element} is in there... just wrong position!"
+            @correct_color = element
+          end
           @code_guess[idx] = nil
         end
+      end
+    end
+
+    def tally_code_colors(code)
+      code.reduce(Hash.new(0)) do |total, color|
+        total[color] = 0 if total[color].nil?
+        total[color] += 1
+        total
       end
     end
   end
@@ -227,7 +260,7 @@ module Mastermind
   end
 end
 
-# METHODS
+# STANDALONE METHODS
 
 def display_board(board)
   j = 1
@@ -245,7 +278,7 @@ def display_board(board)
   puts '--------------------------'
 end
 
-# Run the game below
+# GAME RUNS BELOW
 
 human_player = Mastermind::Human.new
 choice = human_player.make_or_break
@@ -261,6 +294,8 @@ if choice == 'M'
   computer = Mastermind::Computer.new
   computer.code_guess = computer.code_guess.fill(nil, computer.code_guess.size, 4)
 
+  tally = computer.tally_code_colors(human.codemaker_code)
+
   turn = 1
   while turn <= 12
     print "\nTurn #{turn}"
@@ -270,7 +305,7 @@ if choice == 'M'
     turn += 1
 
     board.save_guess_computer(computer)
-    computer.clean_code_guess(human.codemaker_code)
+    computer.clean_code_guess(human.codemaker_code, tally)
     human.guess_feedback(computer, board)
 
     display_board(board)
