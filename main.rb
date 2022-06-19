@@ -114,6 +114,7 @@ module Mastermind
     # Computer takes a shot at guessing the human made code
     def guess_code(code)
       @hold_code_guess = []
+      @count = 0 
 
       final_position_colors.map do |element|
         final_position_colors.delete(element) if element == @incorrect_guess
@@ -140,16 +141,19 @@ module Mastermind
         @hold_code_guess << element
       end
 
-      count = 0 
-      @code_guess.each_with_index {|element, idx| count += 1 if element == code[idx]}
+      @code_guess.each_with_index {|element, idx| @count += 1 if element == code[idx]}
+      @code_guess.each_with_index do |element, idx|
+        if element != code[idx] && @count == 3
+          @incorrect_guess = @code_guess[idx]
+        end
+      end
+    end
 
+    def clean_code_guess(code)
       @code_guess.each_with_index do |element, idx|
         if element == code[idx]
           next
         else
-          if count == 3
-            @incorrect_guess = @code_guess[idx]
-          end
           @code_guess[idx] = nil
         end
       end
@@ -318,6 +322,7 @@ if choice == 'M'
     turn += 1
 
     board.save_guess_computer(computer)
+    computer.clean_code_guess(human.codemaker_code)
     human.guess_feedback(computer, board)
 
     display_board(board)
